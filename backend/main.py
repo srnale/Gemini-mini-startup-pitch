@@ -48,10 +48,13 @@ def generate_pitch(data: Idea):
     Idea: {data.idea}
     """
 
-    response = genai.chat.create(
-    model="gemini-2.5-flash",
-    messages=[{"role": "user", "content": "Hello, Gemini!"}]
-    )
+    try:
+        response = genai.chat.create(
+        model="gemini-2.5-flash",
+        messages=[{"role": "user", "content": "Hello, Gemini!"}]
+        )
+    except Exception as e:
+        print(str(e))
 
 
     text = response.last.strip()
