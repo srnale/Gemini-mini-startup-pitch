@@ -11,7 +11,8 @@ import json
 load_dotenv()
 
 # Initialize Gemini client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
 
@@ -28,6 +29,11 @@ app.add_middleware(
 class Idea(BaseModel):
     idea: str
 
+
+@app.get("/")
+def root():
+    return {"message": "Hello World"}
+
 @app.post("/generate")
 def generate_pitch(data: Idea):
     prompt = f"""
@@ -42,12 +48,13 @@ def generate_pitch(data: Idea):
     Idea: {data.idea}
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",  # valid Gemini 2.5 model
-        contents=prompt
+    response = genai.chat.create(
+    model="gemini-2.5-flash",
+    messages=[{"role": "user", "content": "Hello, Gemini!"}]
     )
 
-    text = response.text.strip()
+
+    text = response.last.strip()
 
 # Remove Markdown code block if present
     text = re.sub(r"^```json\s*|\s*```$", "", text, flags=re.DOTALL)
