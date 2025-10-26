@@ -5,7 +5,7 @@ function App() {
   const [result, setResult] = useState("");
 
   const handleSubmit = async () => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}`, {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idea }),
