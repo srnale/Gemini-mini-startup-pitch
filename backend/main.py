@@ -3,14 +3,15 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
-import google.generativeai as genai
+import google.generativeai as genai  # new client style
 import re
 import json
 
 # Load .env
 load_dotenv()
 
-# Configure Gemini
+# Initialize Gemini client
+# client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
@@ -18,7 +19,7 @@ app = FastAPI()
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
+    allow_origins=["*"],  # frontend URL
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,18 +48,21 @@ def generate_pitch(data: Idea):
     Idea: {data.idea}
     """
 
-    # ✅ Correct Gemini API usage
-    model = genai.GenerativeModel("gemini-2.0-flash")
-    response = model.generate_content(prompt)
+    response = genai.chat.create(
+    model="gemini-2.5-flash",
+    messages=[{"role": "user", "content": "Hello, Gemini!"}]
+    )
 
-    text = response.text.strip()
 
-    # ✅ Clean JSON if Gemini wrapped it in code block
+    text = response.last.strip()
+
+# Remove Markdown code block if present
     text = re.sub(r"^```json\s*|\s*```$", "", text, flags=re.DOTALL)
 
+# Parse JSON
     try:
-        result = json.loads(text)
+            result = json.loads(text)
     except Exception:
-        result = {"error": "Could not parse JSON", "raw_text": text}
+            result = {"error": "Could not parse JSON", "raw_text": text}
 
     return result
